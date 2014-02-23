@@ -40,7 +40,7 @@
 + (CGSize)textSizeForText:(NSString *)txt;
 + (CGSize)neededSizeForText:(NSString *)text;
 + (CGFloat)neededHeightForText:(NSString *)text;
-+ (CGSize)neededSizeForImageViewSize:(CGSize)imageViewSize;
++ (CGSize)neededSizeForImageSize:(CGSize)imageSize;
 
 @end
 
@@ -190,7 +190,7 @@
     _textView.font = font;
 }
 
--(void)setImageView:(UIImageView *)imageView
+- (void)setImageView:(UIImageView *)imageView
 {
     [self removeImageViewObservers];
     [_imageView removeFromSuperview];
@@ -224,7 +224,7 @@
 {
     CGSize bubbleSize;
     if(self.imageView) {
-        bubbleSize = [JSBubbleView neededSizeForImageViewSize:self.imageViewSize];
+        bubbleSize = [JSBubbleView neededSizeForImageSize:self.imageViewSize];
     }
     else {
         bubbleSize = [JSBubbleView neededSizeForText:self.textView.text];
@@ -266,9 +266,7 @@
         
         self.imageView.frame = imageFrame;
         self.textView.frame = CGRectZero;
-    }
-    else
-    {
+    } else {
         CGFloat textX = self.bubbleImageView.frame.origin.x;
         if(self.type == JSBubbleMessageTypeIncoming) {
             textX += (self.bubbleImageView.image.capInsets.left / 2.0f);
@@ -330,15 +328,16 @@
     return size.height + kMarginTop + kMarginBottom;
 }
 
-+ (CGFloat)neededHeightForContentHeight:(CGFloat)contentHeight
++(CGSize)neededSizeForImageSize:(CGSize)imageSize
 {
-    return contentHeight + kMarginTop + kMarginBottom;
+    return CGSizeMake(imageSize.width + kBubblePaddingRight,
+                      imageSize.height + kPaddingTop + kPaddingBottom);
 }
 
-+(CGSize)neededSizeForImageViewSize:(CGSize)imageViewSize
++ (CGFloat)neededHeightForImageSize:(CGSize)imageSize
 {
-    return CGSizeMake(imageViewSize.width + kBubblePaddingRight,
-                      imageViewSize.height);
+    CGSize size = [JSBubbleView neededSizeForImageSize:imageSize];
+    return size.height + kMarginTop + kMarginBottom;
 }
 
 @end

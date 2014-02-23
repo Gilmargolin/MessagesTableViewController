@@ -90,12 +90,12 @@
 + (CGFloat)neededHeightForText:(NSString *)text;
 
 /**
- * Computes and returns the minimum necessary height of a 'JSBubbleView' needed to display the given content height.
+ * Computes and returns the minimum necessary height of a 'JSBubbleView' needed to display the given image size.
  *
- * @param contentHeight The height of the content that is to be displayed in the bubble view.
+ * @param imageSize The size of the image that is to be displayed in the bubble view.
  *
- * @return The height required for the frame of the bubble view in order to display the content.
+ * @return The height required for the frame of the bubble view in order to display the image.
  */
-+ (CGFloat)neededHeightForContentHeight:(CGFloat)contentHeight;
++ (CGFloat)neededHeightForImageSize:(CGSize)imageSize;
 
 @end

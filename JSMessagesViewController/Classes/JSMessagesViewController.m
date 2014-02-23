@@ -263,8 +263,7 @@
     
     [cell setMessage:message];
 	[cell setAvatarImageView:avatar];
-    if([self.dataSource respondsToSelector:@selector(imageViewForRowAtIndexPath:)])
-    {
+    if([self.dataSource respondsToSelector:@selector(imageViewForRowAtIndexPath:)]) {
         [cell setMessageWithImageView:[self.dataSource imageViewForRowAtIndexPath:indexPath]];
         [cell setImageViewSize:[self.delegate sizeForImageViewAtIndexPath:indexPath]];
     }
@@ -301,19 +300,16 @@
         displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
     }
     
-    if(imageView)
-    {
-        return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithImageViewHeight:[self.delegate sizeForImageViewAtIndexPath:indexPath].height
-                                                                                message:message
-                                                                              timestamp:displayTimestamp
-                                                                                 avatar:avatar != nil];
-    }
-    else
-    {
+    if(imageView) {
+        return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
+                                                                 displaysAvatar:avatar != nil
+                                                              displaysTimestamp:displayTimestamp
+                                                                      imageSize:[self.delegate sizeForImageViewAtIndexPath:indexPath]];
+    } else {
     
         return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
-                                                                     avatar:avatar != nil
-                                                           displayTimestamp:displayTimestamp];
+                                                                 displaysAvatar:avatar != nil
+                                                              displaysTimestamp:displayTimestamp];
     }
 }
 

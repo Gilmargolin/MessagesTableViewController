@@ -112,28 +112,29 @@
 /**
  *  Computes and returns the minimum necessary height of a `JSBubbleMessageCell` needed to display its contents.
  *
- *  @param message          An object that conforms to the `JSMessageData` protocol to display in the cell.
- *  @param hasAvatar        A boolean value indicating whether or not the cell has an avatar.
- *  @param displayTimestamp A boolean value indicating whether or not the timestamp is displayed in the cell.
+ *  @param message              An object that conforms to the `JSMessageData` protocol to display in the cell.
+ *  @param displaysAvatar       A boolean value indicating whether or not the cell displays an avatar.
+ *  @param displaysTimestamp    A boolean value indicating whether or not the cell displays a timestamp.
  *
  *  @return The height required for the frame of the cell in order for the cell to display the entire contents of its subviews.
  */
 + (CGFloat)neededHeightForBubbleMessageCellWithMessage:(id<JSMessageData>)message
-                                                avatar:(BOOL)hasAvatar
-                                      displayTimestamp:(BOOL)displayTimestamp;
+                                        displaysAvatar:(BOOL)displaysAvatar
+                                     displaysTimestamp:(BOOL)displaysTimestamp;
 
 /**
  *  Computes and returns the minimum necessary height of a `JSBubbleMessageCell` needed to display its image content.
  *
- *  @param imageViewHeight  The height of the image view to be displayed in the cell.
- *  @param hasTimestamp A boolean value indicating whether or not the cell has a timestamp.
- *  @param hasAvatar    A boolean value indicating whether or not the cell has an avatar.
- *  @param hasSubtitle  A boolean value indicating whether or not the cell has a subtitle.
+ *  @param message              An object that conforms to the `JSMessageData` protocol to display in the cell.
+ *  @param displaysAvatar       A boolean value indicating whether or not the cell displays an avatar.
+ *  @param displaysTimestamp    A boolean value indicating whether or not the cell displays a timestamp.
+ *  @param imageSize            The size of the image view to be displayed in the cell;
  *
+ *  @return The height required for the frame of the cell in order for the cell to display the entire contents of its subviews.
  */
-+ (CGFloat)neededHeightForBubbleMessageCellWithImageViewHeight:(CGFloat)imageViewHeight
-                                                       message:(id<JSMessageData>)message
-                                                     timestamp:(BOOL)hasTimestamp
-                                                        avatar:(BOOL)hasAvatar;
++ (CGFloat)neededHeightForBubbleMessageCellWithMessage:(id<JSMessageData>)message
+                                        displaysAvatar:(BOOL)displaysAvatar
+                                     displaysTimestamp:(BOOL)displaysTimestamp
+                                             imageSize:(CGSize)imageSize;
 
 @end
