@@ -77,6 +77,20 @@
 - (void)setMessage:(id<JSMessageData>)message;
 
 /**
+ *  Sets the image message to be displayed in the bubbleView of the cell.
+ *
+ *  @param image The message image for the cell.
+ */
+- (void)setMessageWithImageView:(UIImageView *)imageView;
+
+/**
+ *  Sets the image view size. The size is respected only if an image view is set for the cell.
+ *
+ *  @param imageViewSize Size for the image view.
+ */
+- (void)setImageViewSize:(CGSize)imageViewSize;
+
+/**
  *  Sets the imageView for the avatarImageView of the cell. The frame is set for you by `JSBubbleMessageCell`.
  *
  *  @param imageView An imageView containing an avatar image. The `image` property of the `UIImageView` must not be `nil`.
@@ -107,5 +121,19 @@
 + (CGFloat)neededHeightForBubbleMessageCellWithMessage:(id<JSMessageData>)message
                                                 avatar:(BOOL)hasAvatar
                                       displayTimestamp:(BOOL)displayTimestamp;
+
+/**
+ *  Computes and returns the minimum necessary height of a `JSBubbleMessageCell` needed to display its image content.
+ *
+ *  @param imageViewHeight  The height of the image view to be displayed in the cell.
+ *  @param hasTimestamp A boolean value indicating whether or not the cell has a timestamp.
+ *  @param hasAvatar    A boolean value indicating whether or not the cell has an avatar.
+ *  @param hasSubtitle  A boolean value indicating whether or not the cell has a subtitle.
+ *
+ */
++ (CGFloat)neededHeightForBubbleMessageCellWithImageViewHeight:(CGFloat)imageViewHeight
+                                                       message:(id<JSMessageData>)message
+                                                     timestamp:(BOOL)hasTimestamp
+                                                        avatar:(BOOL)hasAvatar;
 
 @end

@@ -14,10 +14,17 @@
 
 #import "JSDemoViewController.h"
 #import "JSMessage.h"
+#import <SDWebImage/UIImageView+WebCache.h>
 
 #define kSubtitleJobs @"Jobs"
 #define kSubtitleWoz @"Steve Wozniak"
 #define kSubtitleCook @"Mr. Cook"
+
+@interface JSDemoViewController()
+
+@property (nonatomic, strong) UIImage *image;
+
+@end
 
 @implementation JSDemoViewController
 
@@ -32,6 +39,8 @@
     [[JSBubbleView appearance] setFont:[UIFont systemFontOfSize:16.0f]];
     
     self.title = @"Messages";
+    self.image = [UIImage imageNamed:@"SteveJobs.jpg"];
+    
     self.messageInputView.textView.placeHolder = @"New Message";
     self.sender = @"Jobs";
     
@@ -72,6 +81,11 @@
 }
 
 #pragma mark - Messages view delegate: REQUIRED
+
+-(void)didPressAttachmentButton
+{
+    [[[UIAlertView alloc] initWithTitle:@"Attachment Button" message:@"You pressed attachment button." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil] show];
+}
 
 - (void)didSendText:(NSString *)text fromSender:(NSString *)sender onDate:(NSDate *)date
 {
@@ -174,6 +188,23 @@
 - (JSMessage *)messageForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return [self.messages objectAtIndex:indexPath.row];
+}
+
+- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if(indexPath.row % 2 == 1)
+    {
+        UIImageView *resultImageView = [[UIImageView alloc] init];
+        [resultImageView setImageWithURL:[NSURL URLWithString:@"http://images.apple.com/v/home/am/images/your_verse_hero_2x.jpg"] placeholderImage:_image];
+        resultImageView.contentMode = UIViewContentModeScaleToFill;
+        return resultImageView;
+    }
+    else return nil;
+}
+
+- (CGSize)sizeForImageViewAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(200.0f, 100.0f);
 }
 
 - (UIImageView *)avatarImageViewForRowAtIndexPath:(NSIndexPath *)indexPath sender:(NSString *)sender

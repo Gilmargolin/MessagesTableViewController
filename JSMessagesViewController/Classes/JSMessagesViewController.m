@@ -98,6 +98,10 @@
         [inputView setSendButton:sendButton];
     }
     
+    [inputView.attachmentButton addTarget:self
+                                   action:@selector(attachmentPressed:)
+                         forControlEvents:UIControlEventTouchUpInside];
+    
     inputView.sendButton.enabled = NO;
     [inputView.sendButton addTarget:self
                              action:@selector(sendPressed:)
@@ -192,6 +196,11 @@
 
 #pragma mark - Actions
 
+- (void)attachmentPressed:(UIButton *)sender
+{
+    [self.delegate didPressAttachmentButton];
+}
+
 - (void)sendPressed:(UIButton *)sender
 {
     [self.delegate didSendText:[self.messageInputView.textView.text js_stringByTrimingWhitespace]
@@ -253,7 +262,12 @@
     }
     
     [cell setMessage:message];
-    [cell setAvatarImageView:avatar];
+	[cell setAvatarImageView:avatar];
+    if([self.dataSource respondsToSelector:@selector(imageViewForRowAtIndexPath:)])
+    {
+        [cell setMessageWithImageView:[self.dataSource imageViewForRowAtIndexPath:indexPath]];
+        [cell setImageViewSize:[self.delegate sizeForImageViewAtIndexPath:indexPath]];
+    }
     [cell setBackgroundColor:tableView.backgroundColor];
     
 	#if TARGET_IPHONE_SIMULATOR
@@ -275,15 +289,32 @@
 {
     id<JSMessageData> message = [self.dataSource messageForRowAtIndexPath:indexPath];
     UIImageView *avatar = [self.dataSource avatarImageViewForRowAtIndexPath:indexPath sender:[message sender]];
+
+    UIImageView *imageView;
+    if([self.dataSource respondsToSelector:@selector(imageViewForRowAtIndexPath:)])
+        imageView = [self.dataSource imageViewForRowAtIndexPath:indexPath];
+    else
+        imageView = nil;
     
     BOOL displayTimestamp = YES;
     if ([self.delegate respondsToSelector:@selector(shouldDisplayTimestampForRowAtIndexPath:)]) {
         displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
     }
     
-    return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
+    if(imageView)
+    {
+        return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithImageViewHeight:[self.delegate sizeForImageViewAtIndexPath:indexPath].height
+                                                                                message:message
+                                                                              timestamp:displayTimestamp
+                                                                                 avatar:avatar != nil];
+    }
+    else
+    {
+    
+        return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
                                                                      avatar:avatar != nil
                                                            displayTimestamp:displayTimestamp];
+    }
 }
 
 #pragma mark - Messages view controller

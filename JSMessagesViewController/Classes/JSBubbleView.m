@@ -23,18 +23,24 @@
 #define kPaddingTop 4.0f
 #define kPaddingBottom 8.0f
 #define kBubblePaddingRight 35.0f
+#define kMarginBetweenTextAndImage 4.0f
 
 
 @interface JSBubbleView()
 
+- (void)configureTextView;
+
 - (void)setup;
 
 - (void)addTextViewObservers;
+- (void)addImageViewObservers;
 - (void)removeTextViewObservers;
+- (void)removeImageViewObservers;
 
 + (CGSize)textSizeForText:(NSString *)txt;
 + (CGSize)neededSizeForText:(NSString *)text;
 + (CGFloat)neededHeightForText:(NSString *)text;
++ (CGSize)neededSizeForImageViewSize:(CGSize)imageViewSize;
 
 @end
 
@@ -67,46 +73,53 @@
         [self addSubview:bubbleImageView];
         _bubbleImageView = bubbleImageView;
         
-        UITextView *textView = [[UITextView alloc] init];
-        textView.font = [UIFont systemFontOfSize:16.0f];
-        textView.textColor = [UIColor blackColor];
-        textView.editable = NO;
-        textView.userInteractionEnabled = YES;
-        textView.showsHorizontalScrollIndicator = NO;
-        textView.showsVerticalScrollIndicator = NO;
-        textView.scrollEnabled = NO;
-        textView.backgroundColor = [UIColor clearColor];
-        textView.contentInset = UIEdgeInsetsZero;
-        textView.scrollIndicatorInsets = UIEdgeInsetsZero;
-        textView.contentOffset = CGPointZero;
-        textView.dataDetectorTypes = UIDataDetectorTypeNone;
-        [self addSubview:textView];
-        [self bringSubviewToFront:textView];
-        _textView = textView;
-        
-        if ([_textView respondsToSelector:@selector(textContainerInset)]) {
-            _textView.textContainerInset = UIEdgeInsetsMake(8.0f, 4.0f, 2.0f, 4.0f);
-        }
-        
-        [self addTextViewObservers];
-        
-//        NOTE: TODO: textView frame & text inset
-//        --------------------
-//        future implementation for textView frame
-//        in layoutSubviews : "self.textView.frame = textFrame;" is not needed
-//        when setting the property : "_textView.textContainerInset = UIEdgeInsetsZero;"
-//        unfortunately, this API is available in iOS 7.0+
-//        update after dropping support for iOS 6.0
-//        --------------------
+        [self configureTextView];
     }
     return self;
+}
+
+- (void)configureTextView
+{
+    UITextView *textView = [[UITextView alloc] init];
+    textView.font = [UIFont systemFontOfSize:16.0f];
+    textView.textColor = [UIColor blackColor];
+    textView.editable = NO;
+    textView.userInteractionEnabled = YES;
+    textView.showsHorizontalScrollIndicator = NO;
+    textView.showsVerticalScrollIndicator = NO;
+    textView.scrollEnabled = NO;
+    textView.backgroundColor = [UIColor clearColor];
+    textView.contentInset = UIEdgeInsetsZero;
+    textView.scrollIndicatorInsets = UIEdgeInsetsZero;
+    textView.contentOffset = CGPointZero;
+    textView.dataDetectorTypes = UIDataDetectorTypeNone;
+    [self addSubview:textView];
+    [self bringSubviewToFront:textView];
+    _textView = textView;
+    
+    if([_textView respondsToSelector:@selector(textContainerInset)]) {
+        _textView.textContainerInset = UIEdgeInsetsMake(6.0f, 4.0f, 2.0f, 4.0f);
+    }
+    
+    //        NOTE: TODO: textView frame & text inset
+    //        --------------------
+    //        future implementation for textView frame
+    //        in layoutSubviews : "self.textView.frame = textFrame;" is not needed
+    //        when setting the property : "_textView.textContainerInset = UIEdgeInsetsZero;"
+    //        unfortunately, this API is available in iOS 7.0+
+    //        update after dropping support for iOS 6.0
+    //        --------------------
+    
+    [self addTextViewObservers];
 }
 
 - (void)dealloc
 {
     [self removeTextViewObservers];
+    [self removeImageViewObservers];
     _bubbleImageView = nil;
     _textView = nil;
+    _imageView = nil;
 }
 
 #pragma mark - KVO
@@ -129,12 +142,26 @@
                    context:nil];
 }
 
+- (void)addImageViewObservers
+{
+    [_imageView addObserver:self
+                 forKeyPath:@"image"
+                    options:NSKeyValueObservingOptionNew
+                    context:nil];
+}
+
 - (void)removeTextViewObservers
 {
     [_textView removeObserver:self forKeyPath:@"text"];
     [_textView removeObserver:self forKeyPath:@"font"];
     [_textView removeObserver:self forKeyPath:@"textColor"];
 }
+
+- (void)removeImageViewObservers
+{
+    [_imageView removeObserver:self forKeyPath:@"image"];
+}
+
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(id)object
@@ -148,6 +175,11 @@
             [self setNeedsLayout];
         }
     }
+    else if (object == self.imageView) {
+        if([keyPath isEqualToString:@"image"]) {
+            [self setNeedsLayout];
+        }
+    }
 }
 
 #pragma mark - Setters
@@ -156,6 +188,19 @@
 {
     _font = font;
     _textView.font = font;
+}
+
+-(void)setImageView:(UIImageView *)imageView
+{
+    [self removeImageViewObservers];
+    [_imageView removeFromSuperview];
+    
+    _imageView = imageView;
+    
+    _imageView.userInteractionEnabled = YES;
+    [self addSubview:_imageView];
+    [self bringSubviewToFront:_imageView];
+    [self addImageViewObservers];
 }
 
 #pragma mark - UIAppearance Getters
@@ -177,7 +222,13 @@
 
 - (CGRect)bubbleFrame
 {
-    CGSize bubbleSize = [JSBubbleView neededSizeForText:self.textView.text];
+    CGSize bubbleSize;
+    if(self.imageView) {
+        bubbleSize = [JSBubbleView neededSizeForImageViewSize:self.imageViewSize];
+    }
+    else {
+        bubbleSize = [JSBubbleView neededSizeForText:self.textView.text];
+    }
     
     return CGRectIntegral(CGRectMake((self.type == JSBubbleMessageTypeOutgoing ? self.frame.size.width - bubbleSize.width : 0.0f),
                                      kMarginTop,
@@ -193,18 +244,44 @@
     
     self.bubbleImageView.frame = [self bubbleFrame];
     
-    CGFloat textX = self.bubbleImageView.frame.origin.x;
-    
-    if (self.type == JSBubbleMessageTypeIncoming) {
-        textX += (self.bubbleImageView.image.capInsets.left / 2.0f);
+    if(self.imageView) {
+        
+        CGSize imageSize = self.imageViewSize;
+        
+        CGFloat imageX = self.bubbleImageView.frame.origin.x + (self.bubbleImageView.frame.size.width - imageSize.width) / 2.0f;
+        
+        if(self.type == JSBubbleMessageTypeOutgoing) {
+            imageX -= self.bubbleImageView.image.capInsets.left / 8.0f;
+        }
+        else {
+            imageX += self.bubbleImageView.image.capInsets.left / 8.0f;
+        }
+        
+        CGFloat imageY = self.bubbleImageView.frame.origin.y + (self.bubbleImageView.frame.size.height - imageSize.height) / 2.0f;
+        
+        CGRect imageFrame = CGRectMake(imageX,
+                                       imageY,
+                                       imageSize.width,
+                                       imageSize.height);
+        
+        self.imageView.frame = imageFrame;
+        self.textView.frame = CGRectZero;
     }
-    
-    CGRect textFrame = CGRectMake(textX,
-                                  self.bubbleImageView.frame.origin.y,
-                                  self.bubbleImageView.frame.size.width - (self.bubbleImageView.image.capInsets.right / 2.0f),
-                                  self.bubbleImageView.frame.size.height - kMarginTop);
-    
-    self.textView.frame = CGRectIntegral(textFrame);
+    else
+    {
+        CGFloat textX = self.bubbleImageView.frame.origin.x;
+        if(self.type == JSBubbleMessageTypeIncoming) {
+            textX += (self.bubbleImageView.image.capInsets.left / 2.0f);
+        }
+        
+        CGRect textFrame = CGRectMake(textX,
+                                      self.bubbleImageView.frame.origin.y,
+                                      self.bubbleImageView.frame.size.width - (self.bubbleImageView.image.capInsets.right / 2.0f),
+                                      self.bubbleImageView.frame.size.height - kMarginTop);
+        
+        self.textView.frame = CGRectIntegral(textFrame);
+        self.imageView.frame = CGRectZero;
+    }
 }
 
 #pragma mark - Bubble view
@@ -212,8 +289,13 @@
 + (CGSize)textSizeForText:(NSString *)txt
 {
     CGFloat maxWidth = [UIScreen mainScreen].applicationFrame.size.width * 0.70f;
+    return [self textSizeForText:txt maxWidth:maxWidth];
+}
+
++ (CGSize)textSizeForText:(NSString *)txt maxWidth:(CGFloat)maxWidth
+{
     CGFloat maxHeight = MAX([JSMessageTextView numberOfLinesForMessage:txt],
-                         [txt js_numberOfLines]) * [JSMessageInputView textViewLineHeight];
+                            [txt js_numberOfLines]) * [JSMessageInputView textViewLineHeight];
     maxHeight += kJSAvatarImageSize;
     
     CGSize stringSize;
@@ -246,6 +328,17 @@
 {
     CGSize size = [JSBubbleView neededSizeForText:text];
     return size.height + kMarginTop + kMarginBottom;
+}
+
++ (CGFloat)neededHeightForContentHeight:(CGFloat)contentHeight
+{
+    return contentHeight + kMarginTop + kMarginBottom;
+}
+
++(CGSize)neededSizeForImageViewSize:(CGSize)imageViewSize
+{
+    return CGSizeMake(imageViewSize.width + kBubblePaddingRight,
+                      imageViewSize.height);
 }
 
 @end

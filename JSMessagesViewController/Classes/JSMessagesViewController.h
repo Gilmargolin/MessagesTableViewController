@@ -39,6 +39,12 @@
 - (void)didSendText:(NSString *)text fromSender:(NSString *)sender onDate:(NSDate *)date;
 
 /**
+ *  Tells the delegate that the specified text has been sent. Hook into your own backend here.
+ *
+ */
+- (void)didPressAttachmentButton;
+
+/**
  *  Asks the delegate for the message type for the row at the specified index path.
  *
  *  @param indexPath The index path of the row to be displayed.
@@ -117,6 +123,18 @@
  */
 - (NSString *)customCellIdentifierForRowAtIndexPath:(NSIndexPath *)indexPath;
 
+/**
+ *  Asks the delegate what size should be used to display the image that resides in the row specified by the index path. This must be implemented
+ *  by the delegate if `imageViewForRowAtIndexPath:` is implemented.
+ *
+ *  @param indexPath    The index path of the row.
+ *
+ *  @return Height for image to be displayed.
+ *
+ *  @see imageViewForRowAtIndexPath:
+ */
+- (CGSize)sizeForImageViewAtIndexPath:(NSIndexPath *)indexPath;
+
 @end
 
 
@@ -124,6 +142,7 @@
 @protocol JSMessagesViewDataSource <NSObject>
 
 @required
+@optional
 
 /**
  *  Asks the data soruce for the message object to display for the row at the specified index path. The message text is displayed in the bubble at index path. The message date is displayed *above* the row at the specified index path. The message sender is displayed *below* the row at the specified index path.
@@ -133,6 +152,15 @@
  *  @return An object that conforms to the `JSMessageData` protocol containing the message data. This value must not be `nil`.
  */
 - (id<JSMessageData>)messageForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+/**
+ * Asks the data source for the image view to display for the row at the specified index path.
+ *
+ * @param indexPath An index path locating a row in the table view.
+ *
+ * @return An image view. If a cell contains an image view, text is ignored.
+ */
+- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
  *  Asks the data source for the imageView to display for the row at the specified index path with the given sender. The imageView must have its `image` property set.
