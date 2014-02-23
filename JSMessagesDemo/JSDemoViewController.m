@@ -82,9 +82,13 @@
 
 #pragma mark - Messages view delegate: REQUIRED
 
--(void)didPressAttachmentButton
+- (void)didPressAttachmentButton
 {
-    [[[UIAlertView alloc] initWithTitle:@"Attachment Button" message:@"You pressed attachment button." delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil] show];
+    [[[UIAlertView alloc] initWithTitle:@"Attachment Button"
+                                message:@"You pressed attachment button."
+                               delegate:nil
+                      cancelButtonTitle:@"Cancel"
+                      otherButtonTitles:nil] show];
 }
 
 - (void)didSendText:(NSString *)text fromSender:(NSString *)sender onDate:(NSDate *)date
@@ -183,6 +187,11 @@
     return YES;
 }
 
+- (CGSize)sizeForImageViewAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(200.0f, 200.0f);
+}
+
 #pragma mark - Messages view data source: REQUIRED
 
 - (JSMessage *)messageForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -190,27 +199,25 @@
     return [self.messages objectAtIndex:indexPath.row];
 }
 
-- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if(indexPath.row % 2 == 1)
-    {
-        UIImageView *resultImageView = [[UIImageView alloc] init];
-        [resultImageView setImageWithURL:[NSURL URLWithString:@"http://images.apple.com/v/home/am/images/your_verse_hero_2x.jpg"] placeholderImage:_image];
-        resultImageView.contentMode = UIViewContentModeScaleToFill;
-        return resultImageView;
-    }
-    else return nil;
-}
-
-- (CGSize)sizeForImageViewAtIndexPath:(NSIndexPath *)indexPath
-{
-    return CGSizeMake(200.0f, 100.0f);
-}
-
 - (UIImageView *)avatarImageViewForRowAtIndexPath:(NSIndexPath *)indexPath sender:(NSString *)sender
 {
     UIImage *image = [self.avatars objectForKey:sender];
     return [[UIImageView alloc] initWithImage:image];
+}
+
+#pragma mark - Messages view data source: OPTIONAL
+
+- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if(indexPath.row % 2 == 1) {
+        UIImageView *resultImageView = [[UIImageView alloc] init];
+        [resultImageView setImageWithURL:[NSURL URLWithString:@"http://images.apple.com/v/home/am/images/your_verse_hero_2x.jpg"]
+                        placeholderImage:_image];
+        resultImageView.contentMode = UIViewContentModeScaleToFill;
+        return resultImageView;
+    }
+    
+    return nil;
 }
 
 @end
