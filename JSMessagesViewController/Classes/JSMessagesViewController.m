@@ -41,7 +41,7 @@
 
 @end
 
-
+static const CGSize defaultImageSize = {150.0f, 150.0f};
 
 @implementation JSMessagesViewController
 
@@ -265,7 +265,11 @@
 	[cell setAvatarImageView:avatar];
     if([self.dataSource respondsToSelector:@selector(imageViewForRowAtIndexPath:)]) {
         [cell setMessageWithImageView:[self.dataSource imageViewForRowAtIndexPath:indexPath]];
-        [cell setImageViewSize:[self.delegate sizeForImageViewAtIndexPath:indexPath]];
+        CGSize imageSize = defaultImageSize;
+        if ([self.delegate respondsToSelector:@selector(sizeForImageViewAtIndexPath:)]) {
+            imageSize = [self.delegate sizeForImageViewAtIndexPath:indexPath];
+        }
+        [cell setImageViewSize:imageSize];
     }
     [cell setBackgroundColor:tableView.backgroundColor];
     
@@ -301,10 +305,15 @@
     }
     
     if(imageView) {
+        CGSize imageSize = defaultImageSize;
+        if ([self.delegate respondsToSelector:@selector(sizeForImageViewAtIndexPath:)]) {
+            imageSize = [self.delegate sizeForImageViewAtIndexPath:indexPath];
+        }
+        
         return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
                                                                  displaysAvatar:avatar != nil
                                                               displaysTimestamp:displayTimestamp
-                                                                      imageSize:[self.delegate sizeForImageViewAtIndexPath:indexPath]];
+                                                                      imageSize:imageSize];
     } else {
     
         return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message

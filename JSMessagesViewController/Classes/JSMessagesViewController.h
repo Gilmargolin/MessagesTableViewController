@@ -142,7 +142,6 @@
 @protocol JSMessagesViewDataSource <NSObject>
 
 @required
-@optional
 
 /**
  *  Asks the data soruce for the message object to display for the row at the specified index path. The message text is displayed in the bubble at index path. The message date is displayed *above* the row at the specified index path. The message sender is displayed *below* the row at the specified index path.
@@ -154,15 +153,6 @@
 - (id<JSMessageData>)messageForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
- * Asks the data source for the image view to display for the row at the specified index path.
- *
- * @param indexPath An index path locating a row in the table view.
- *
- * @return An image view. If a cell contains an image view, text is ignored.
- */
-- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath;
-
-/**
  *  Asks the data source for the imageView to display for the row at the specified index path with the given sender. The imageView must have its `image` property set.
  *
  *  @param indexPath An index path locating a row in the table view.
@@ -171,6 +161,17 @@
  *  @return An image view specifying the avatar for the message at indexPath. This value may be `nil`.
  */
 - (UIImageView *)avatarImageViewForRowAtIndexPath:(NSIndexPath *)indexPath sender:(NSString *)sender;
+
+@optional
+
+/**
+ * Asks the data source for the image view to display for the row at the specified index path.
+ *
+ * @param indexPath An index path locating a row in the table view.
+ *
+ * @return An image view. If a cell contains an image view, text is ignored.
+ */
+- (UIImageView *)imageViewForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
