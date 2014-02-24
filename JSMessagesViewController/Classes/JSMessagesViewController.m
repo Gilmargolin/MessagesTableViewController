@@ -56,24 +56,23 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
     
 	_isUserScrolling = NO;
     
-    CGSize size = self.view.frame.size;
-    
     JSMessageInputViewStyle inputViewStyle = [self.delegate inputViewStyle];
     CGFloat inputViewHeight = (inputViewStyle == JSMessageInputViewStyleFlat) ? 45.0f : 40.0f;
     
-    CGRect tableFrame = CGRectMake(0.0f, 0.0f, size.width, size.height - inputViewHeight);
-	JSMessageTableView *tableView = [[JSMessageTableView alloc] initWithFrame:tableFrame style:UITableViewStylePlain];
+	JSMessageTableView *tableView = [[JSMessageTableView alloc] initWithFrame:self.view.frame style:UITableViewStylePlain];
 	tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	tableView.dataSource = self;
 	tableView.delegate = self;
 	[self.view addSubview:tableView];
 	_tableView = tableView;
     
+    [self setTableViewInsetsWithBottomValue:inputViewHeight];
+    
     [self setBackgroundColor:[UIColor js_backgroundColorClassic]];
     
     CGRect inputFrame = CGRectMake(0.0f,
-                                   size.height - inputViewHeight,
-                                   size.width,
+                                   self.view.frame.size.height - inputViewHeight,
+                                   self.view.frame.size.width,
                                    inputViewHeight);
     
     BOOL allowsPan = YES;
@@ -109,11 +108,6 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
     
     [self.view addSubview:inputView];
     _messageInputView = inputView;
-    
-    [_messageInputView.textView addObserver:self
-                                 forKeyPath:@"contentSize"
-                                    options:NSKeyValueObservingOptionNew
-                                    context:nil];
 }
 
 #pragma mark - View lifecycle
@@ -129,8 +123,6 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
 {
     [super viewWillAppear:animated];
     
-    [self scrollToBottomAnimated:NO];
-    
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(handleWillShowKeyboardNotification:)
 												 name:UIKeyboardWillShowNotification
@@ -140,13 +132,11 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
 											 selector:@selector(handleWillHideKeyboardNotification:)
 												 name:UIKeyboardWillHideNotification
                                                object:nil];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
     
-    [self scrollToBottomAnimated:YES];
+    [self.messageInputView.textView addObserver:self
+                                     forKeyPath:@"contentSize"
+                                        options:NSKeyValueObservingOptionNew
+                                        context:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -158,6 +148,8 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    
+    [self.messageInputView.textView removeObserver:self forKeyPath:@"contentSize"];
 }
 
 - (void)didReceiveMemoryWarning
@@ -168,7 +160,6 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
 
 - (void)dealloc
 {
-    [_messageInputView.textView removeObserver:self forKeyPath:@"contentSize"];
     _delegate = nil;
     _dataSource = nil;
     _tableView = nil;
@@ -272,12 +263,6 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
         [cell setImageViewSize:imageSize];
     }
     [cell setBackgroundColor:tableView.backgroundColor];
-    
-	#if TARGET_IPHONE_SIMULATOR
-        cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeNone;
-	#else
-		cell.bubbleView.textView.dataDetectorTypes = UIDataDetectorTypeAll;
-	#endif
 	
     if ([self.delegate respondsToSelector:@selector(configureCell:atIndexPath:)]) {
         [self.delegate configureCell:cell atIndexPath:indexPath];
@@ -539,8 +524,7 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
 																  inputViewFrame.size.height);
 
                          [self setTableViewInsetsWithBottomValue:self.view.frame.size.height
-                                                                - self.messageInputView.frame.origin.y
-                                                                - inputViewFrame.size.height];
+                                                                - self.messageInputView.frame.origin.y];
                      }
                      completion:nil];
 }
@@ -559,18 +543,6 @@ static const CGSize defaultImageSize = {150.0f, 150.0f};
 {
     CGRect inputViewFrame = self.messageInputView.frame;
     inputViewFrame.origin.y = self.view.bounds.size.height - inputViewFrame.size.height;
-    self.messageInputView.frame = inputViewFrame;
-}
-
-- (void)keyboardWillSnapBackToPoint:(CGPoint)point
-{
-    if (!self.tabBarController.tabBar.hidden){
-        return;
-    }
-	
-    CGRect inputViewFrame = self.messageInputView.frame;
-    CGPoint keyboardOrigin = [self.view convertPoint:point fromView:nil];
-    inputViewFrame.origin.y = keyboardOrigin.y - inputViewFrame.size.height;
     self.messageInputView.frame = inputViewFrame;
 }
 
